@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<script type="application/x-cpp-head">
+		#include "db/db.h"
+        #include "db/user.h"
+	</script>
+	<script type="application/x-cpp-source">
+		auto conn = DB::instance().acquire();
+        UserRepo userRepo(conn.ref());
+        auto user = userRepo.get_one_by_id(id);
+	</script>
+    <meta charset="UTF-8">
+    <title>用户信息</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f9f9f9;
+        }
+        .user-info {
+            background: #fff;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            max-width: 400px;
+            margin: auto;
+        }
+        .user-info h2 {
+            margin-top: 0;
+        }
+        .user-info p {
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="user-info" cpp-if="user">
+        <h2>用户基本信息</h2>
+        <p><strong>姓名：</strong><span cpp-text="(*user).username()">张三</span></p>
+        <p><strong>邮箱：</strong><span cpp-text="(*user).email()">zhangsan@example.com</span></p>
+        <p><strong>注册时间：</strong><span cpp-text="(*user).created_at()">2023-01-01 12:00:00</span></p>
+    </div>
+    <div class="user-info" cpp-if="!user">
+        <h2>用户未找到</h2>
+        <p>系统内无此用户。(ID: <span cpp-text="id">0</span>)</p>
+    </div>
+</body>
+</html>

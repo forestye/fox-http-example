@@ -1,0 +1,12 @@
+GET /hello -> hello(resp)
+GET /favicon.ico -> favicon(resp)
+GET / -> index(resp)
+GET /user/{int:id} -> user(resp,id)
+POST /login -> login(form, resp)
+FILESYSTEM /css -> ../pages/css 
+FILESYSTEM /images -> ../pages/images
+FILESYSTEM /upload -> ../pages/upload
+GET /userinfo/{int:id} -> json api_user_info(id)
+GET /test/string -> text test_string()
+GET /test/string/{int:id} -> text test_id(id)
+GET /test/{string:dir}/string/{int:id} -> text test_dir_id(dir,id)

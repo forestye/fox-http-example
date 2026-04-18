@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<title>首页</title>
+	<link rel="stylesheet" href="css/styles.css">
+	<script type="application/x-cpp-head">
+		#include <iostream>
+		#include <ctime>
+		#include <string>
+		#include <sstream>
+	</script>
+	<script type="application/x-cpp-source">
+		std::string datestr;
+		std::time_t t = std::time(nullptr);
+		std::tm* tm_info = std::localtime(&t);
+		std::ostringstream oss;
+		oss << (tm_info->tm_year + 1900) << "年"
+			<< (tm_info->tm_mon + 1) << "月"
+			<< tm_info->tm_mday << "日";
+		datestr = oss.str();
+	</script>
+</head>
+<body>
+	<header class="header-banner">
+		<img src="images/header-banner.png" alt="网站横幅图片" class="banner-image">
+		<div class="banner-overlay">
+			<h1 class="banner-title">欢迎来到我的首页</h1>
+		</div>
+	</header>
+	<main class="main-content">
+		<p>今天是<span cpp-text="datestr"></span></p>
+ 
+	<!-- 登录表单：提交到 /login，使用默认的 x-www-form-urlencoded 编码 -->
+	<section class="login-section">
+		<h2>登录</h2>
+		<form action="/login" method="post">
+			<div class="form-group">
+				<label for="username">用户名</label>
+				<input type="text" id="username" name="username" required placeholder="输入用户名">
+			</div>
+			<div class="form-group">
+				<label for="password">密码</label>
+				<input type="password" id="password" name="password" required placeholder="输入密码">
+			</div>
+			<button type="submit" class="btn">登录</button>
+		</form>
+	</section>
+	</main>
+</body>
+</html>

@@ -5,33 +5,33 @@ project(SimpleHttpTemplateHs CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# ─── httpserver (the rewritten HTTP library replacing Photon) ─────────
-# Sibling project at ../httpserver. Build the library as a subdirectory
+# ─── fox-http (the rewritten HTTP library replacing Photon) ─────────
+# Sibling project at ../fox-http. Build the library as a subdirectory
 # target so we don't require a system install.
-if(NOT TARGET httpserver::httpserver)
-    set(HTTPSERVER_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../httpserver
-                     ${CMAKE_BINARY_DIR}/httpserver_build)
+if(NOT TARGET fox-http::fox-http)
+    set(FOX_HTTP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../fox-http
+                     ${CMAKE_BINARY_DIR}/fox-http_build)
 endif()
 
-# ─── Code-gen toolchain (migrated to httpserver API) ──────────────────
-find_program(CRDL_COMPILER NAMES crdl_compiler
-    HINTS ${CMAKE_CURRENT_SOURCE_DIR}/../route_hs/build)
-find_program(CRDL_FUNC NAMES crdl_func
-    HINTS ${CMAKE_CURRENT_SOURCE_DIR}/../route_hs/build)
-find_program(WEAVEPP_EXECUTABLE NAMES weave++
-    HINTS ${CMAKE_CURRENT_SOURCE_DIR}/../weave++_hs/build)
+# ─── Code-gen toolchain (fox-http-based) ──────────────────
+find_program(CRDL_COMPILER NAMES fox-route
+    HINTS ${CMAKE_CURRENT_SOURCE_DIR}/../fox-route/build)
+find_program(CRDL_FUNC NAMES fox-route-func
+    HINTS ${CMAKE_CURRENT_SOURCE_DIR}/../fox-route/build)
+find_program(FOX_PAGE_EXECUTABLE NAMES fox-page
+    HINTS ${CMAKE_CURRENT_SOURCE_DIR}/../fox-page/build)
 if(NOT CRDL_COMPILER)
-    message(FATAL_ERROR "crdl_compiler not found — build /home/yelin/code/route_hs first.")
+    message(FATAL_ERROR "fox-route not found — build /home/yelin/code/fox-route first.")
 endif()
 if(NOT CRDL_FUNC)
-    message(FATAL_ERROR "crdl_func not found — build /home/yelin/code/route_hs first.")
+    message(FATAL_ERROR "fox-route-func not found — build /home/yelin/code/fox-route first.")
 endif()
-if(NOT WEAVEPP_EXECUTABLE)
-    message(FATAL_ERROR "weave++ not found — build /home/yelin/code/weave++_hs first.")
+if(NOT FOX_PAGE_EXECUTABLE)
+    message(FATAL_ERROR "fox-page not found — build /home/yelin/code/fox-page first.")
 endif()
-message(STATUS "crdl_compiler: ${CRDL_COMPILER}")
-message(STATUS "weave++:       ${WEAVEPP_EXECUTABLE}")
+message(STATUS "fox-route: ${CRDL_COMPILER}")
+message(STATUS "fox-page:       ${FOX_PAGE_EXECUTABLE}")
 
 # ─── Third-party deps (unchanged) ─────────────────────────────────────
 find_package(gflags REQUIRED)
@@ -73,7 +73,7 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/routes.crdl
     COMMAND ${CRDL_COMPILER} -o ${CMAKE_CURRENT_BINARY_DIR}
             ${CMAKE_CURRENT_SOURCE_DIR}/routes.crdl
-    COMMENT "crdl_compiler: routes.crdl → router.generated.*"
+    COMMENT "fox-route: routes.crdl → router.generated.*"
 )
 add_custom_target(generate_router_files DEPENDS
     ${CMAKE_CURRENT_BINARY_DIR}/router.generated.cpp
@@ -96,9 +96,9 @@ foreach(GEN_CPP ${PAGE_CPP_LIST})
         add_custom_command(
             OUTPUT ${GEN_CPP}
             COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/pages
-            COMMAND sh -c "${WEAVEPP_EXECUTABLE} ${SRC_HTML} -o ${CMAKE_CURRENT_BINARY_DIR}/pages --func \"$(${CRDL_FUNC} ${CRDL_FILE} ${CPP_BASENAME})\""
+            COMMAND sh -c "${FOX_PAGE_EXECUTABLE} ${SRC_HTML} -o ${CMAKE_CURRENT_BINARY_DIR}/pages --func \"$(${CRDL_FUNC} ${CRDL_FILE} ${CPP_BASENAME})\""
             DEPENDS ${SRC_HTML} ${CRDL_FILE}
-            COMMENT "weave++: ${CPP_BASENAME}.html → ${CPP_BASENAME}.cpp"
+            COMMENT "fox-page: ${CPP_BASENAME}.html → ${CPP_BASENAME}.cpp"
             VERBATIM
         )
     endif()
@@ -123,7 +123,7 @@ target_include_directories(simple_http_template_hs PRIVATE
 )
 
 target_link_libraries(simple_http_template_hs PRIVATE
-    httpserver::httpserver
+    fox-http::fox-http
     gflags
     ${JSONCPP_LIBRARY}
     ${YXMYSQL_LIBRARY}

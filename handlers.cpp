@@ -1,7 +1,7 @@
 #include "handlers.h"
 
-#include "httpserver/http_response.h"
-#include "httpserver/http_util.h"
+#include "fox-http/http_response.h"
+#include "fox-http/http_util.h"
 
 #include "db/db.h"
 #include "db/session.h"
@@ -17,9 +17,9 @@
 #include <unordered_map>
 
 using namespace std;
-using httpserver::HttpResponse;
+using fox::http::HttpResponse;
 
-void hello(httpserver::HttpResponse& resp) {
+void hello(fox::http::HttpResponse& resp) {
     resp.set_status(200);
     resp.headers().content_type("text/html; charset=utf-8");
     static constexpr std::string_view body = "<html><body><h1>Hello</h1></body></html>";
@@ -33,7 +33,7 @@ void hello(httpserver::HttpResponse& resp) {
     }
 }
 
-void favicon(httpserver::HttpResponse& resp) {
+void favicon(fox::http::HttpResponse& resp) {
     std::ifstream ifs("../pages/images/favicon.ico", std::ios::binary);
     if (!ifs) {
         resp.set_status(404);
@@ -47,7 +47,7 @@ void favicon(httpserver::HttpResponse& resp) {
     resp.set_body(buf.str());
 }
 
-void login(std::unordered_map<std::string, std::string> form, httpserver::HttpResponse& resp) {
+void login(std::unordered_map<std::string, std::string> form, fox::http::HttpResponse& resp) {
     auto it_u = form.find("username");
     auto it_p = form.find("password");
     if (it_u == form.end() || it_p == form.end()) {

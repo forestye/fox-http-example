@@ -1,6 +1,6 @@
 // main entry for simple_http_template_hs (Phase 4 migration).
 
-#include "httpserver/http_server.h"
+#include "fox-http/http_server.h"
 #include "router.generated.h"
 #include "db/db.h"
 
@@ -25,7 +25,7 @@ int main() {
             if (n > 0) io_threads = n;
         }
 
-        httpserver::HttpServer server(port, io_threads);
+        fox::http::HttpServer server(port, io_threads);
         Router my_router;
         server.set_handler(&my_router);
 

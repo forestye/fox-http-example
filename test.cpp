@@ -1,4 +1,4 @@
-// main entry for simple_http_template_hs (Phase 4 migration).
+// main entry for fox-http-example (Phase 4 migration).
 
 #include "fox-http/http_server.h"
 #include "router.generated.h"
@@ -29,7 +29,7 @@ int main() {
         Router my_router;
         server.set_handler(&my_router);
 
-        std::cout << "simple_http_template_hs listening on port " << port << std::endl;
+        std::cout << "fox-http-example listening on port " << port << std::endl;
         return server.run();
     } catch (const std::exception& e) {
         std::cerr << "fatal: " << e.what() << std::endl;

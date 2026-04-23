@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(SimpleHttpTemplateHs CXX)
+project(fox-http-example CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -106,23 +106,23 @@ endforeach()
 
 # ─── Executable ───────────────────────────────────────────────────────
 file(GLOB DB_SRC "${CMAKE_CURRENT_SOURCE_DIR}/db/*.cpp")
-add_executable(simple_http_template_hs
+add_executable(fox-http-example
     ${CMAKE_CURRENT_SOURCE_DIR}/test.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/handlers.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/router.generated.cpp
     ${PAGE_CPP_LIST}
     ${DB_SRC}
 )
-add_dependencies(simple_http_template_hs generate_router_files)
+add_dependencies(fox-http-example generate_router_files)
 
-target_include_directories(simple_http_template_hs PRIVATE
+target_include_directories(fox-http-example PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${YXMYSQL_INCLUDE_DIR}
     ${JSONCPP_INCLUDE_DIR}
 )
 
-target_link_libraries(simple_http_template_hs PRIVATE
+target_link_libraries(fox-http-example PRIVATE
     fox-http::fox-http
     gflags
     ${JSONCPP_LIBRARY}

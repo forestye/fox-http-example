@@ -33,8 +33,7 @@ endif()
 message(STATUS "fox-route: ${CRDL_COMPILER}")
 message(STATUS "fox-page:       ${FOX_PAGE_EXECUTABLE}")
 
-# ─── Third-party deps (unchanged) ─────────────────────────────────────
-find_package(gflags REQUIRED)
+# ─── Third-party deps ─────────────────────────────────────────────────
 
 # yxmysql
 set(YXMYSQL_ROOT "" CACHE PATH "yxmysql install root (optional)")
@@ -124,7 +123,6 @@ target_include_directories(fox-http-example PRIVATE
 
 target_link_libraries(fox-http-example PRIVATE
     fox-http::fox-http
-    gflags
     ${JSONCPP_LIBRARY}
     ${YXMYSQL_LIBRARY}
     ${MYSQLCLIENT_LIBRARY}

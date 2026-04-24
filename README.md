@@ -29,12 +29,11 @@
 - **yxmysql** + **libmysqlclient**（数据库路由用到；无此环境时 DB 初始化失败
   会降级为警告，非 DB 路由仍可用）
 - **jsoncpp**（`libjsoncpp-dev`）
-- **gflags**（`libgflags-dev`）
 
 典型 Ubuntu/Debian：
 
 ```bash
-sudo apt install cmake libjsoncpp-dev libgflags-dev libmysqlclient-dev
+sudo apt install cmake libjsoncpp-dev libmysqlclient-dev
 # yxmysql: https://github.com/forestye/yxmysql 自行构建安装
 ```
 

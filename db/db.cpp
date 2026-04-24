@@ -7,7 +7,7 @@ DB& DB::instance() {
 
 void DB::init() {
     std::lock_guard<std::mutex> lock(mutex_);
-    yxmysql::ConnectionConfig config;
+    fox::mysql::ConnectionConfig config;
     config.host = "127.0.0.1";
     config.port = 3306;
     config.user = "simple_http";
@@ -20,15 +20,15 @@ void DB::init() {
     config.auto_reconnect = true;
     config.multi_statements = false;
 
-    yxmysql_pool::PoolOptions opts;
+    fox::mysql::pool::PoolOptions opts;
     opts.min_size = 2;
     opts.max_size = 16;
     opts.acquire_timeout = std::chrono::seconds(5);
 
-    pool_ = std::make_unique<yxmysql_pool::ConnectionPool>(config, opts);
+    pool_ = std::make_unique<fox::mysql::pool::ConnectionPool>(config, opts);
 }
 
-yxmysql_pool::PooledConn DB::acquire() {
+fox::mysql::pool::PooledConn DB::acquire() {
     std::lock_guard<std::mutex> lock(mutex_);
     if (!pool_) throw std::runtime_error("DB pool not initialized");
     return pool_->acquire();

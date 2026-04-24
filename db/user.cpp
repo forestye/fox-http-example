@@ -2,7 +2,7 @@
 #include <sstream>
 
 using namespace std;
-using namespace yxmysql;
+using namespace fox::mysql;
 
 optional<User> UserRepo::get_one_by_id(long long id) {
   string sql = "SELECT id, username, password_hash, email, created_at FROM user WHERE id=" + to_string(id) + " LIMIT 1";

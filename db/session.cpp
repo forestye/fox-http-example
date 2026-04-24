@@ -6,7 +6,7 @@
 #include <utility>
 
 using namespace std;
-using namespace yxmysql;
+using namespace fox::mysql;
 
 optional<Session> SessionRepo::get_one_by_id(long long id) {
   string sql = "SELECT id, user_id, token, expires_at, created_at FROM session WHERE id=" + to_string(id) + " LIMIT 1";

@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <optional>
 #include <vector>
-#include "yxmysql/yxmysql.h"
+#include "fox-mysql/fox-mysql.h"
 
 // 对象类：id==0 表示未持久化的新对象
 class User {
@@ -12,7 +12,7 @@ public:
   User() = default;
 
   // 通过 ResultSet 构造，避免外部访问私有字段
-  explicit User(yxmysql::ResultSet& rs) {
+  explicit User(fox::mysql::ResultSet& rs) {
     id_ = rs.get_int64(0);
     username_ = rs.get_string(1);
     password_hash_ = rs.get_string(2);
@@ -59,7 +59,7 @@ private:
 // 仓库类
 class UserRepo {
 public:
-  explicit UserRepo(yxmysql::Connection& conn) : conn_(conn) {}
+  explicit UserRepo(fox::mysql::Connection& conn) : conn_(conn) {}
 
   std::optional<User> get_one_by_id(long long id);
   bool save(User& u);
@@ -70,5 +70,5 @@ private:
   bool update(User& u);
 
 private:
-  yxmysql::Connection& conn_;
+  fox::mysql::Connection& conn_;
 };

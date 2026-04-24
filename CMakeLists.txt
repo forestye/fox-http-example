@@ -35,16 +35,16 @@ message(STATUS "fox-page:       ${FOX_PAGE_EXECUTABLE}")
 
 # ─── Third-party deps ─────────────────────────────────────────────────
 
-# yxmysql
-set(YXMYSQL_ROOT "" CACHE PATH "yxmysql install root (optional)")
-find_path(YXMYSQL_INCLUDE_DIR NAMES yxmysql/yxmysql.h
-    HINTS ${YXMYSQL_ROOT} PATHS /usr/local/include /usr/include
-    PATH_SUFFIXES include include/yxmysql)
-find_library(YXMYSQL_LIBRARY NAMES yxmysql yxmysql_static
-    HINTS ${YXMYSQL_ROOT} PATHS /usr/local/lib /usr/lib /usr/lib64
+# fox-mysql
+set(FOX_MYSQL_ROOT "" CACHE PATH "fox-mysql install root (optional)")
+find_path(FOX_MYSQL_INCLUDE_DIR NAMES fox-mysql/fox-mysql.h
+    HINTS ${FOX_MYSQL_ROOT} PATHS /usr/local/include /usr/include
+    PATH_SUFFIXES include include/fox-mysql)
+find_library(FOX_MYSQL_LIBRARY NAMES fox-mysql fox-mysql_static
+    HINTS ${FOX_MYSQL_ROOT} PATHS /usr/local/lib /usr/lib /usr/lib64
     PATH_SUFFIXES lib lib64)
-if(NOT YXMYSQL_INCLUDE_DIR OR NOT YXMYSQL_LIBRARY)
-    message(FATAL_ERROR "yxmysql not found.")
+if(NOT FOX_MYSQL_INCLUDE_DIR OR NOT FOX_MYSQL_LIBRARY)
+    message(FATAL_ERROR "fox-mysql not found.")
 endif()
 
 # jsoncpp
@@ -117,13 +117,13 @@ add_dependencies(fox-http-example generate_router_files)
 target_include_directories(fox-http-example PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${YXMYSQL_INCLUDE_DIR}
+    ${FOX_MYSQL_INCLUDE_DIR}
     ${JSONCPP_INCLUDE_DIR}
 )
 
 target_link_libraries(fox-http-example PRIVATE
     fox-http::fox-http
     ${JSONCPP_LIBRARY}
-    ${YXMYSQL_LIBRARY}
+    ${FOX_MYSQL_LIBRARY}
     ${MYSQLCLIENT_LIBRARY}
 )

@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <optional>
 #include <vector>
-#include "yxmysql/yxmysql.h"
+#include "fox-mysql/fox-mysql.h"
 
 class Session {
 public:
@@ -12,7 +12,7 @@ public:
   Session() = default;
   
   // 通过 ResultSet 构造 Session
-  Session(yxmysql::ResultSet& rs) {
+  Session(fox::mysql::ResultSet& rs) {
     id_ = rs.get_int64(0);
     user_id_ = rs.get_int64(1);
     token_ = rs.get_string(2);
@@ -60,7 +60,7 @@ private:
 
 class SessionRepo {
 public:
-  explicit SessionRepo(yxmysql::Connection& conn) : conn_(conn) {}
+  explicit SessionRepo(fox::mysql::Connection& conn) : conn_(conn) {}
 
   std::optional<Session> get_one_by_id(long long id);
   bool save(Session& s);
@@ -77,5 +77,5 @@ private:
   bool update(Session& s);
 
 private:
-  yxmysql::Connection& conn_;
+  fox::mysql::Connection& conn_;
 };

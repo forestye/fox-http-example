@@ -10,7 +10,7 @@
 - 12 条路由，覆盖静态、动态参数、catchall、FILESYSTEM 静态文件、JSON API、
   HTML 页面、表单 POST
 - 两个 HTML 模板（首页 + 用户详情）用 fox-page 编译成零拷贝 `writev` 渲染函数
-- MySQL 连接池（经 yxmysql）+ 用户/会话两张表 + 简单 Repo 类
+- MySQL 连接池（经 fox-mysql）+ 用户/会话两张表 + 简单 Repo 类
 - Apache 2.0
 
 **不在这里（故意的）：**
@@ -26,7 +26,7 @@
 - **CMake** 3.14+
 - **fox-http / fox-route / fox-page**（相邻目录 `../fox-http`、`../fox-route`、
   `../fox-page`）
-- **yxmysql** + **libmysqlclient**（数据库路由用到；无此环境时 DB 初始化失败
+- **fox-mysql** + **libmysqlclient**（数据库路由用到；无此环境时 DB 初始化失败
   会降级为警告，非 DB 路由仍可用）
 - **jsoncpp**（`libjsoncpp-dev`）
 
@@ -34,7 +34,7 @@
 
 ```bash
 sudo apt install cmake libjsoncpp-dev libmysqlclient-dev
-# yxmysql: https://github.com/forestye/yxmysql 自行构建安装
+# fox-mysql: https://github.com/forestye/fox-mysql 自行构建安装
 ```
 
 ---
@@ -106,7 +106,7 @@ FILESYSTEM 静态映射、`text`/`json` 返回类型自动序列化。
 | `routes.crdl` | 路由定义，fox-route 消费 |
 | `pages/index.html`、`pages/user.html` | fox-page 的输入模板，构建期编译为 C++ 渲染函数 |
 | `pages/css/`、`pages/images/`、`pages/upload/` | FILESYSTEM 静态文件 |
-| `db/db.{h,cpp}` | yxmysql 连接池单例 |
+| `db/db.{h,cpp}` | fox-mysql 连接池单例 |
 | `db/user.{h,cpp}` | `UserRepo`，通过 ID 查 user |
 | `db/session.{h,cpp}` | `SessionRepo`，会话 token 管理 |
 | `db/tables.sql` | schema 参考 |

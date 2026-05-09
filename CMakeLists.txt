@@ -5,30 +5,35 @@ project(fox-http-example CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# ─── fox-http (the rewritten HTTP library replacing Photon) ─────────
-# Sibling project at ../fox-http. Build the library as a subdirectory
-# target so we don't require a system install.
+# ─── fox-http (installed library) ─────────────────────────────────────
+# Consume the system-installed fox-http via its exported targets file.
+# (No fox-httpConfig.cmake is shipped, so include the Targets file directly.)
 if(NOT TARGET fox-http::fox-http)
-    set(FOX_HTTP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../fox-http
-                     ${CMAKE_BINARY_DIR}/fox-http_build)
+    find_package(Boost REQUIRED)
+    find_package(Threads REQUIRED)
+    find_file(FOX_HTTP_TARGETS_FILE NAMES fox-httpTargets.cmake
+        PATHS /usr/local/lib/cmake/fox-http
+              /usr/lib/cmake/fox-http
+              /usr/lib64/cmake/fox-http)
+    if(NOT FOX_HTTP_TARGETS_FILE)
+        message(FATAL_ERROR "fox-http install not found (looked for fox-httpTargets.cmake under /usr/local/lib/cmake/fox-http).")
+    endif()
+    include(${FOX_HTTP_TARGETS_FILE})
 endif()
 
 # ─── Code-gen toolchain (fox-http-based) ──────────────────
-find_program(CRDL_COMPILER NAMES fox-route
-    HINTS ${CMAKE_CURRENT_SOURCE_DIR}/../fox-route/build)
-find_program(CRDL_FUNC NAMES fox-route-func
-    HINTS ${CMAKE_CURRENT_SOURCE_DIR}/../fox-route/build)
-find_program(FOX_PAGE_EXECUTABLE NAMES fox-page
-    HINTS ${CMAKE_CURRENT_SOURCE_DIR}/../fox-page/build)
+# Installed under /usr/local/bin (or any directory on PATH).
+find_program(CRDL_COMPILER NAMES fox-route)
+find_program(CRDL_FUNC NAMES fox-route-func)
+find_program(FOX_PAGE_EXECUTABLE NAMES fox-page)
 if(NOT CRDL_COMPILER)
-    message(FATAL_ERROR "fox-route not found — build /home/yelin/code/fox-route first.")
+    message(FATAL_ERROR "fox-route not found — install fox-route to a directory on PATH.")
 endif()
 if(NOT CRDL_FUNC)
-    message(FATAL_ERROR "fox-route-func not found — build /home/yelin/code/fox-route first.")
+    message(FATAL_ERROR "fox-route-func not found — install fox-route to a directory on PATH.")
 endif()
 if(NOT FOX_PAGE_EXECUTABLE)
-    message(FATAL_ERROR "fox-page not found — build /home/yelin/code/fox-page first.")
+    message(FATAL_ERROR "fox-page not found — install fox-page to a directory on PATH.")
 endif()
 message(STATUS "fox-route: ${CRDL_COMPILER}")
 message(STATUS "fox-page:       ${FOX_PAGE_EXECUTABLE}")

@@ -33,22 +33,20 @@ find_package(fox-mysql REQUIRED)
 # jsoncpp
 find_package(jsoncpp REQUIRED)
 
-# ─── Code generation: routes.crdl → handlers.h / router.generated.* ───
+# ─── Code generation: routes.crdl → handlers.h + router.generated.* ───
+# Note: fox-route also writes a handlers.cpp scaffold on first run, but
+# skips it on subsequent runs if the file already exists. It is treated
+# as one-time scaffolding, not a build artifact — hence not listed as an
+# OUTPUT here (would otherwise force fox-route to re-run on every build
+# after a routes.crdl edit, since its mtime never gets refreshed).
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/router.generated.cpp
            ${CMAKE_CURRENT_BINARY_DIR}/router.generated.h
            ${CMAKE_CURRENT_BINARY_DIR}/handlers.h
-           ${CMAKE_CURRENT_BINARY_DIR}/handlers.cpp
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/routes.crdl
     COMMAND ${CRDL_COMPILER} -o ${CMAKE_CURRENT_BINARY_DIR}
             ${CMAKE_CURRENT_SOURCE_DIR}/routes.crdl
     COMMENT "fox-route: routes.crdl → router.generated.*"
-)
-add_custom_target(generate_router_files DEPENDS
-    ${CMAKE_CURRENT_BINARY_DIR}/router.generated.cpp
-    ${CMAKE_CURRENT_BINARY_DIR}/router.generated.h
-    ${CMAKE_CURRENT_BINARY_DIR}/handlers.h
-    ${CMAKE_CURRENT_BINARY_DIR}/handlers.cpp
 )
 
 # ─── Page generation: pages/*.html → ${build}/pages/*.cpp ─────────────

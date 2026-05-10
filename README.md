@@ -147,11 +147,15 @@ docker run --name fox-mysql -e MYSQL_ROOT_PASSWORD=rootpw -p 3306:3306 -d mysql:
 
 ```sql
 -- 1) 库 + 账户
+--    默认只建 'simple_http'@'localhost'：本机直连即可，攻击面最小。
+--    需要 Docker / 远端机器连过来时再单独 `CREATE USER ... @'%'`，
+--    并把那条单独 `GRANT`。不要图省事直接全开 '%'。
 CREATE DATABASE IF NOT EXISTS simple_http
     DEFAULT CHARACTER SET utf8mb4
     DEFAULT COLLATE utf8mb4_unicode_ci;
-CREATE USER IF NOT EXISTS 'simple_http'@'%' IDENTIFIED BY 'dbpassexample';
-GRANT ALL ON simple_http.* TO 'simple_http'@'%';
+
+CREATE USER IF NOT EXISTS 'simple_http'@'localhost' IDENTIFIED BY 'dbpassexample';
+GRANT ALL ON simple_http.* TO 'simple_http'@'localhost';
 FLUSH PRIVILEGES;
 
 USE simple_http;
@@ -230,6 +234,18 @@ curl -s http://127.0.0.1:19876/users | grep -oE '<em>[^<]+</em>' | head
 - **`DB pool not initialized` 在所有 DB 路由**：本机没 MySQL 或账号不对。
   非 DB 路由（`/hello`、`/test/*`、FILESYSTEM）仍然可用，test.cpp 里 DB
   初始化失败是 warning，不影响进程启动。
+- **`Access denied for user 'simple_http'@'localhost'`**：MySQL 把
+  `'name'@'localhost'` 与 `'name'@'%'` 视为两个不同的账户匹配项，本机直连
+  通常按 `localhost` 解析、不会自动回退到 `'%'`。如果之前只建了 `@'%'`，
+  补一条 `@'localhost'` 即可（默认 SQL 已是这种写法）：
+  ```sql
+  CREATE USER 'simple_http'@'localhost' IDENTIFIED BY 'dbpassexample';
+  GRANT ALL ON simple_http.* TO 'simple_http'@'localhost';
+  FLUSH PRIVILEGES;
+  ```
+- **从 Docker / 远端机器连过来又被拒**：那种场景源 IP 不是 `localhost`，
+  需要单独再建 `'simple_http'@'%'`（或具体的源 IP）账户并 GRANT。但
+  `@'%'` 等于"任意 IP 都允许"，仅在受信网络下使用，避免直接做默认账户。
 - **端口 19876 被占**：改 `test.cpp` 里的 `constexpr unsigned short port = 19876;`
   或把硬编码改成从 argv 读。
 - **`/css/styles.css` 返回 404**：启动目录影响 FILESYSTEM 的相对路径

@@ -237,11 +237,18 @@ curl -s http://127.0.0.1:19876/users | grep -oE '<em>[^<]+</em>' | head
 - **`Access denied for user 'simple_http'@'localhost'`**：MySQL 把
   `'name'@'localhost'` 与 `'name'@'%'` 视为两个不同的账户匹配项，本机直连
   通常按 `localhost` 解析、不会自动回退到 `'%'`。如果之前只建了 `@'%'`，
-  补一条 `@'localhost'` 即可（默认 SQL 已是这种写法）：
+  补一条 `@'localhost'` 即可。下面这段是幂等的——`@'localhost'` 不存在
+  就建，存在就重置成已知状态，不会撞 `ERROR 1396 (HY000): Operation
+  CREATE USER failed`：
   ```sql
+  DROP USER IF EXISTS 'simple_http'@'localhost';
   CREATE USER 'simple_http'@'localhost' IDENTIFIED BY 'dbpassexample';
   GRANT ALL ON simple_http.* TO 'simple_http'@'localhost';
   FLUSH PRIVILEGES;
+  ```
+  想先看一眼当前账户情况：
+  ```sql
+  SELECT user, host FROM mysql.user WHERE user='simple_http';
   ```
 - **从 Docker / 远端机器连过来又被拒**：那种场景源 IP 不是 `localhost`，
   需要单独再建 `'simple_http'@'%'`（或具体的源 IP）账户并 GRANT。但

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>名册 · fox-http 示例</title>
+    <title>名录 · fox-http 示例</title>
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <script type="application/x-cpp-head">
@@ -19,74 +19,61 @@
 <body>
     <header class="rail">
         <a href="/" class="rail__brand">
-            <span class="rail__brand-mark">fox</span>
-            <span>http · 示例</span>
+            <span class="seal">范</span>
+            <span>fox-http 示例</span>
         </a>
         <nav class="rail__nav">
-            <a href="/">首页</a>
-            <a href="/users">名册</a>
-            <a href="/userinfo/1">JSON 接口</a>
-            <a href="/test/string">路由</a>
+            <a href="/">卷首</a>
+            <a href="/users">名录</a>
+            <a href="/userinfo/1">接口</a>
+            <a href="/test/abc/string/42">路径</a>
         </nav>
         <div class="rail__meta">
-            <span class="dot"></span>GET /users
+            GET /users
         </div>
     </header>
 
     <main class="page">
         <section class="hero">
-            <div class="hero__index">Nº 02 / 名册</div>
-            <div>
-                <div class="eyebrow reveal reveal--1">SELECT * FROM user —— 由 cpp-for 渲染</div>
-                <h1 class="hero__title reveal reveal--2">
-                    <em>名册</em>。
-                </h1>
-                <p class="hero__lede reveal reveal--3">
-                    下面每张卡片都对应 user 表里的一行，请求时即查即渲染。点击任意姓名进入其个人页路由。
-                </p>
-            </div>
-            <aside class="status reveal reveal--4">
-                <div class="status__row">
-                    <span class="status__label">来源</span>
-                    <span class="status__value">user 表</span>
-                </div>
-                <div class="status__row">
-                    <span class="status__label">上限</span>
-                    <span class="status__value">50 行</span>
-                </div>
-                <div class="status__row">
-                    <span class="status__label">本次返回</span>
-                    <span class="status__value">{{users.size()}}</span>
-                </div>
-                <div class="status__row">
-                    <span class="status__label">渲染方式</span>
-                    <span class="status__value">cpp-for</span>
-                </div>
-            </aside>
+            <div class="hero__index">卷之二 · 名录</div>
+            <div class="chapter reveal reveal--1">SELECT * FROM user — 由 cpp-for 渲出</div>
+            <h1 class="hero__title reveal reveal--2">
+                人各<em>在册</em>。
+            </h1>
+            <p class="hero__lede reveal reveal--3">
+                下方每张卡片，是 user 表里的一行；请求时即查即写出。点姓名以入其个人页。
+            </p>
         </section>
 
         <section class="section" cpp-if="!users.empty()">
+            <div class="stats reveal reveal--4">
+                <div class="stats__item"><span class="stats__label">来源</span><span class="stats__value">user 表</span></div>
+                <div class="stats__item"><span class="stats__label">上限</span><span class="stats__value">50 行</span></div>
+                <div class="stats__item"><span class="stats__label">本次</span><span class="stats__value">{{users.size()}} 行</span></div>
+                <div class="stats__item"><span class="stats__label">渲染</span><span class="stats__value">cpp-for</span></div>
+            </div>
+
             <div class="users">
                 <a class="user-card" cpp-for="const auto& u : users" href="/user/{{u.id()}}">
-                    <div class="user-card__id">ID · {{u.id()}}</div>
-                    <h3 class="user-card__name"><em cpp-text="u.username()">—</em></h3>
+                    <div class="user-card__id">第 {{u.id()}} 号</div>
+                    <h3 class="user-card__name" cpp-text="u.username()">—</h3>
                     <div class="user-card__email" cpp-text="u.email()">—</div>
-                    <div class="user-card__date">加入 · <span cpp-text="u.created_at()">—</span></div>
+                    <div class="user-card__date">登录簿 · <span cpp-text="u.created_at()">—</span></div>
                 </a>
             </div>
         </section>
 
         <section cpp-if="users.empty()">
             <div class="empty">
-                <div class="empty__code">空 · 共 0 行</div>
-                <h2 class="empty__title">暂无用户。</h2>
-                <p class="empty__sub">执行 db/tables.sql，插入一行数据，然后刷新本页。</p>
-                <a href="/" class="empty__back">← 返回首页</a>
+                <div class="empty__code">空 · 0 行</div>
+                <h2 class="empty__title">册中无人。</h2>
+                <p class="empty__sub">请先按 README 建表，插入数据，再回此页。</p>
+                <a href="/" class="empty__back">← 返卷首</a>
             </div>
         </section>
 
         <footer class="footer">
-            <div><a href="/">← 首页</a></div>
+            <div><a href="/">← 卷首</a></div>
             <div>SELECT id, username, email, created_at FROM user LIMIT 50</div>
         </footer>
     </main>

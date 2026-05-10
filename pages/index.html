@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>fox-http · 示例</title>
+    <title>fox-http 示例</title>
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <script type="application/x-cpp-head">
@@ -15,7 +15,6 @@
     <script type="application/x-cpp-source">
         std::string datestr;
         std::string timestr;
-        std::string isodate;
         {
             std::time_t t = std::time(nullptr);
             std::tm* tm_info = std::localtime(&t);
@@ -24,136 +23,115 @@
               << (tm_info->tm_mon + 1) << "月"
               << tm_info->tm_mday << "日";
             datestr = d.str();
-            std::ostringstream tm;  tm  << std::put_time(tm_info, "%H:%M:%S");           timestr = tm.str();
-            std::ostringstream iso; iso << std::put_time(tm_info, "%Y-%m-%dT%H:%M:%S");  isodate = iso.str();
+            std::ostringstream tm;
+            tm << std::put_time(tm_info, "%H:%M");
+            timestr = tm.str();
         }
     </script>
 </head>
 <body>
     <header class="rail">
         <a href="/" class="rail__brand">
-            <span class="rail__brand-mark">fox</span>
-            <span>http · 示例</span>
+            <span class="seal">范</span>
+            <span>fox-http 示例</span>
         </a>
         <nav class="rail__nav">
-            <a href="/">首页</a>
-            <a href="/users">名册</a>
-            <a href="/userinfo/1">JSON 接口</a>
-            <a href="/test/string">路由</a>
+            <a href="/">卷首</a>
+            <a href="/users">名录</a>
+            <a href="/userinfo/1">接口</a>
+            <a href="/test/abc/string/42">路径</a>
         </nav>
         <div class="rail__meta">
-            <span class="dot"></span>200 OK · {{isodate}}
+            {{datestr}} · {{timestr}}
         </div>
     </header>
 
     <main class="page">
         <section class="hero">
-            <div class="hero__index">Nº 01 / 序言</div>
-            <div>
-                <div class="eyebrow reveal reveal--1">C++ 示例 · 二〇二六</div>
-                <h1 class="hero__title reveal reveal--2">
-                    一份 <em>小而讲究</em> 的<br>
-                    HTTP 示例，<br>
-                    写在代码里。
-                </h1>
-                <p class="hero__lede reveal reveal--3">
-                    fox-http-example 在服务端渲染 HTML、连接 MySQL、按需返回 JSON——
-                    希望它看上去比一般的性能测试样例顺眼些。今天是 {{datestr}}。
-                </p>
-            </div>
-            <aside class="status reveal reveal--4">
-                <div class="status__row">
-                    <span class="status__label">引擎</span>
-                    <span class="status__value">fox-http</span>
-                </div>
-                <div class="status__row">
-                    <span class="status__label">语言</span>
-                    <span class="status__value">C++17</span>
-                </div>
-                <div class="status__row">
-                    <span class="status__label">日期</span>
-                    <span class="status__value" cpp-text="datestr">—</span>
-                </div>
-                <div class="status__row">
-                    <span class="status__label">本地时间</span>
-                    <span class="status__value" cpp-text="timestr">—</span>
-                </div>
-                <div class="status__row">
-                    <span class="status__label">存储</span>
-                    <span class="status__value">MySQL · jsoncpp</span>
-                </div>
-            </aside>
+            <div class="hero__index">卷之一 · 卷首</div>
+            <div class="chapter reveal reveal--1">fox-http · fox-route · fox-page · fox-mysql</div>
+            <h1 class="hero__title reveal reveal--2">
+                一份小例，<br>
+                写在<em>代码里。</em>
+            </h1>
+            <p class="hero__lede reveal reveal--3">
+                把上面四件组件凑成一个跑得起来的 web 小品；它既是新项目的脚手架，
+                也是 fox 一系的回归测试。今日 {{datestr}}，本机时刻 {{timestr}}。
+            </p>
         </section>
 
         <section class="section">
             <header class="section__head">
-                <div class="eyebrow">Nº 02 / 能力一览</div>
-                <div>
-                    <h2 class="section__title">四条路由，<br><em>四种风格。</em></h2>
-                    <p class="section__lede">下面每个端点都用 fox-http 的不同特性实现，点开任意一条即可看到运行时表现。</p>
-                </div>
+                <div class="chapter">卷之二</div>
+                <h2 class="section__title">演示<em>四则。</em></h2>
+                <p class="section__lede">下方四条路由，各取 fox-http 的一种用法。点其一，即见运行时之样。</p>
             </header>
-            <div class="features">
-                <a class="feature" href="/users">
-                    <div class="feature__num">01 — HTML</div>
-                    <h3 class="feature__title">服务端渲染的<em>用户名册</em></h3>
-                    <p class="feature__body">用 cpp-for 遍历 user 表的每一行，编译期烧进二进制，请求时直接返回缓存好的 HTML。</p>
-                    <span class="feature__path">GET /users</span>
+
+            <div class="demos">
+                <a class="demo" href="/users">
+                    <div class="demo__num">之一 · <em>名录</em></div>
+                    <div>
+                        <h3 class="demo__title">服务端渲染的<em>用户名录</em></h3>
+                        <p class="demo__desc">cpp-for 一行 SQL 一行 HTML，编译期烧进二进制；请求时直查 MySQL，写出页面。</p>
+                    </div>
+                    <div class="demo__path">GET /users</div>
                 </a>
-                <a class="feature" href="/userinfo/1">
-                    <div class="feature__num">02 — JSON</div>
-                    <h3 class="feature__title">类型化的 <em>JSON</em> 处理函数</h3>
-                    <p class="feature__body">handler 直接返回 Json::Value 即可，序列化、Content-Type、Content-Length 都自动办好。</p>
-                    <span class="feature__path">GET /userinfo/{id}</span>
+                <a class="demo" href="/userinfo/1">
+                    <div class="demo__num">之二 · <em>接口</em></div>
+                    <div>
+                        <h3 class="demo__title">类型化的 <em>JSON</em> 处理器</h3>
+                        <p class="demo__desc">handler 直接返回 Json::Value，序列化、Content-Type、Content-Length 一并安顿。</p>
+                    </div>
+                    <div class="demo__path">GET /userinfo/{id}</div>
                 </a>
-                <a class="feature" href="/test/string/42">
-                    <div class="feature__num">03 — 路径</div>
-                    <h3 class="feature__title">类型化的<em>路径参数</em></h3>
-                    <p class="feature__body">{int:id} 与 {string:dir} 直接落进 handler 签名，不需要一行胶水代码。</p>
-                    <span class="feature__path">GET /test/{dir}/string/{id}</span>
+                <a class="demo" href="/test/abc/string/42">
+                    <div class="demo__num">之三 · <em>路径</em></div>
+                    <div>
+                        <h3 class="demo__title"><em>类型化</em>的路径参数</h3>
+                        <p class="demo__desc">{int:id} 与 {string:dir} 直接落进 handler 签名，胶水代码省去。</p>
+                    </div>
+                    <div class="demo__path">GET /test/{dir}/string/{id}</div>
                 </a>
-                <a class="feature" href="/hello">
-                    <div class="feature__num">04 — 原始</div>
-                    <h3 class="feature__title">零拷贝 <em>writev</em></h3>
-                    <p class="feature__body">想抠分配开销时，手写 iovec，body 直接从 string_view 推到 socket。</p>
-                    <span class="feature__path">GET /hello</span>
+                <a class="demo" href="/hello">
+                    <div class="demo__num">之四 · <em>原写</em></div>
+                    <div>
+                        <h3 class="demo__title">零拷贝的 <em>writev</em></h3>
+                        <p class="demo__desc">手写 iovec，body 自 string_view 直发；一次 writev 把整条响应推到 socket。</p>
+                    </div>
+                    <div class="demo__path">GET /hello</div>
                 </a>
             </div>
         </section>
 
         <section class="section">
             <header class="section__head">
-                <div class="eyebrow">Nº 03 / 登录</div>
-                <div>
-                    <h2 class="section__title">请<em>登录</em>，<br>礼貌地。</h2>
-                    <p class="section__lede">用 <code>x-www-form-urlencoded</code> 编码 POST 到 <code>/login</code>。占位逻辑：用户名任意，但密码必须是字面量 <code>password</code>。</p>
-                </div>
+                <div class="chapter">卷之三</div>
+                <h2 class="section__title">梗概。</h2>
+                <p class="section__lede">本仓凑齐 fox 一系的四件组件，做成一份端到端示例。各司其职：</p>
             </header>
-            <div class="login-grid">
-                <div class="login-info">
-                    <p>handler 从表单里取 <code>username</code> 和 <code>password</code>，做一遍最朴素的校验。成功时塞一个 <code>session_token</code> cookie，再返回 JSON <code>{ "ok": true }</code>。</p>
-                    <p>仅作示例，不要把这套鉴权抄进任何认真的项目里。</p>
+
+            <dl class="components">
+                <div class="component">
+                    <dt>fox-http</dt>
+                    <dd>运行时 HTTP 服务器；零拷贝 <code>writev</code> + 协程 IO。</dd>
                 </div>
-                <form class="login-form" action="/login" method="post">
-                    <span class="login-form__corner login-form__corner--tl"></span>
-                    <span class="login-form__corner login-form__corner--tr"></span>
-                    <span class="login-form__corner login-form__corner--bl"></span>
-                    <span class="login-form__corner login-form__corner--br"></span>
-                    <div class="field">
-                        <label class="field__label" for="username">用户名</label>
-                        <input class="field__input" type="text" id="username" name="username" placeholder="如：zhangsan" required autocomplete="username">
-                    </div>
-                    <div class="field">
-                        <label class="field__label" for="password">密码</label>
-                        <input class="field__input" type="password" id="password" name="password" placeholder="password" required autocomplete="current-password">
-                    </div>
-                    <button class="btn" type="submit">登录 →</button>
-                </form>
-            </div>
+                <div class="component">
+                    <dt>fox-route</dt>
+                    <dd><code>routes.crdl</code> → C++ Router 代码生成；编译期解析路径参数与返回类型。</dd>
+                </div>
+                <div class="component">
+                    <dt>fox-page</dt>
+                    <dd>HTML 模板 → 零拷贝 <code>writev</code> 渲染函数；本页即由它产出。</dd>
+                </div>
+                <div class="component">
+                    <dt>fox-mysql</dt>
+                    <dd>MySQL 连接池 + 简单 Repo 模式。</dd>
+                </div>
+            </dl>
         </section>
 
         <footer class="footer">
-            <div>fox-http · 示例 · {{datestr}}</div>
+            <div>fox-http 示例 · 二〇二六</div>
             <div><a href="https://github.com/forestye/fox-http-example">github.com/forestye/fox-http-example</a></div>
         </footer>
     </main>

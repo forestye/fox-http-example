@@ -1,49 +1,89 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-	<script type="application/x-cpp-head">
-		#include "db/db.h"
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile · fox-http example</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script type="application/x-cpp-head">
+        #include "db/db.h"
         #include "db/user.h"
-	</script>
-	<script type="application/x-cpp-source">
-		auto conn = DB::instance().acquire();
+    </script>
+    <script type="application/x-cpp-source">
+        auto conn = DB::instance().acquire();
         UserRepo userRepo(conn.ref());
         auto user = userRepo.get_one_by_id(id);
-	</script>
-    <meta charset="UTF-8">
-    <title>用户信息</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            background-color: #f9f9f9;
-        }
-        .user-info {
-            background: #fff;
-            padding: 24px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            max-width: 400px;
-            margin: auto;
-        }
-        .user-info h2 {
-            margin-top: 0;
-        }
-        .user-info p {
-            margin: 8px 0;
-        }
-    </style>
+    </script>
 </head>
 <body>
-    <div class="user-info" cpp-if="user">
-        <h2>用户基本信息</h2>
-        <p><strong>姓名：</strong><span cpp-text="(*user).username()">张三</span></p>
-        <p><strong>邮箱：</strong><span cpp-text="(*user).email()">zhangsan@example.com</span></p>
-        <p><strong>注册时间：</strong><span cpp-text="(*user).created_at()">2023-01-01 12:00:00</span></p>
-    </div>
-    <div class="user-info" cpp-if="!user">
-        <h2>用户未找到</h2>
-        <p>系统内无此用户。(ID: <span cpp-text="id">0</span>)</p>
-    </div>
+    <header class="rail">
+        <a href="/" class="rail__brand">
+            <span class="rail__brand-mark">fox</span>
+            <span>http · example</span>
+        </a>
+        <nav class="rail__nav">
+            <a href="/">Home</a>
+            <a href="/users">Directory</a>
+            <a href="/userinfo/1">JSON API</a>
+            <a href="/test/string">Routing</a>
+        </nav>
+        <div class="rail__meta">
+            <span class="dot"></span>GET /user/{{id}}
+        </div>
+    </header>
+
+    <main class="page">
+        <section class="profile" cpp-if="user">
+            <div>
+                <div class="eyebrow reveal reveal--1">Subject under inspection</div>
+                <div class="profile__id reveal reveal--2">
+                    User Nº {{id}}
+                </div>
+                <h1 class="profile__title reveal reveal--3">
+                    <em cpp-text="(*user).username()">—</em>
+                </h1>
+                <p class="profile__bio reveal reveal--4">
+                    A row in the user table, fetched by id and rendered server-side.
+                    The same record is also available as JSON at
+                    <code>/userinfo/{{id}}</code>.
+                </p>
+            </div>
+            <aside class="reveal reveal--5">
+                <div class="spec">
+                    <div class="spec__row">
+                        <span class="spec__label">ID</span>
+                        <span class="spec__value">{{id}}</span>
+                    </div>
+                    <div class="spec__row">
+                        <span class="spec__label">Username</span>
+                        <span class="spec__value" cpp-text="(*user).username()">—</span>
+                    </div>
+                    <div class="spec__row">
+                        <span class="spec__label">Email</span>
+                        <span class="spec__value" cpp-text="(*user).email()">—</span>
+                    </div>
+                    <div class="spec__row">
+                        <span class="spec__label">Joined</span>
+                        <span class="spec__value" cpp-text="(*user).created_at()">—</span>
+                    </div>
+                </div>
+            </aside>
+        </section>
+
+        <section cpp-if="!user">
+            <div class="empty">
+                <div class="empty__code">404 · ROW NOT FOUND</div>
+                <h2 class="empty__title">No such user.</h2>
+                <p class="empty__sub">No row matched id = {{id}} in the user table.</p>
+                <a href="/users" class="empty__back">← view directory</a>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div><a href="/users">← directory</a></div>
+            <div>SELECT * FROM user WHERE id = {{id}}</div>
+        </footer>
+    </main>
 </body>
 </html>

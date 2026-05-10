@@ -53,6 +53,7 @@ add_custom_command(
 set(PAGE_CPP_LIST
     ${CMAKE_CURRENT_BINARY_DIR}/pages/index.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/pages/user.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/pages/users.cpp
 )
 
 set(CRDL_FILE "${CMAKE_CURRENT_SOURCE_DIR}/routes.crdl")

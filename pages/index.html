@@ -1,51 +1,158 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-	<meta charset="UTF-8">
-	<title>首页</title>
-	<link rel="stylesheet" href="css/styles.css">
-	<script type="application/x-cpp-head">
-		#include <iostream>
-		#include <ctime>
-		#include <string>
-		#include <sstream>
-	</script>
-	<script type="application/x-cpp-source">
-		std::string datestr;
-		std::time_t t = std::time(nullptr);
-		std::tm* tm_info = std::localtime(&t);
-		std::ostringstream oss;
-		oss << (tm_info->tm_year + 1900) << "年"
-			<< (tm_info->tm_mon + 1) << "月"
-			<< tm_info->tm_mday << "日";
-		datestr = oss.str();
-	</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fox-http · Example</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script type="application/x-cpp-head">
+        #include <ctime>
+        #include <iomanip>
+        #include <sstream>
+        #include <string>
+    </script>
+    <script type="application/x-cpp-source">
+        std::string datestr;
+        std::string timestr;
+        std::string isodate;
+        {
+            std::time_t t = std::time(nullptr);
+            std::tm* tm_info = std::localtime(&t);
+            std::ostringstream d;   d   << std::put_time(tm_info, "%B %d, %Y");          datestr = d.str();
+            std::ostringstream tm;  tm  << std::put_time(tm_info, "%H:%M:%S");           timestr = tm.str();
+            std::ostringstream iso; iso << std::put_time(tm_info, "%Y-%m-%dT%H:%M:%S");  isodate = iso.str();
+        }
+    </script>
 </head>
 <body>
-	<header class="header-banner">
-		<img src="images/header-banner.png" alt="网站横幅图片" class="banner-image">
-		<div class="banner-overlay">
-			<h1 class="banner-title">欢迎来到我的首页</h1>
-		</div>
-	</header>
-	<main class="main-content">
-		<p>今天是<span cpp-text="datestr"></span></p>
- 
-	<!-- 登录表单：提交到 /login，使用默认的 x-www-form-urlencoded 编码 -->
-	<section class="login-section">
-		<h2>登录</h2>
-		<form action="/login" method="post">
-			<div class="form-group">
-				<label for="username">用户名</label>
-				<input type="text" id="username" name="username" required placeholder="输入用户名">
-			</div>
-			<div class="form-group">
-				<label for="password">密码</label>
-				<input type="password" id="password" name="password" required placeholder="输入密码">
-			</div>
-			<button type="submit" class="btn">登录</button>
-		</form>
-	</section>
-	</main>
+    <header class="rail">
+        <a href="/" class="rail__brand">
+            <span class="rail__brand-mark">fox</span>
+            <span>http · example</span>
+        </a>
+        <nav class="rail__nav">
+            <a href="/">Home</a>
+            <a href="/users">Directory</a>
+            <a href="/userinfo/1">JSON API</a>
+            <a href="/test/string">Routing</a>
+        </nav>
+        <div class="rail__meta">
+            <span class="dot"></span>200 OK · {{isodate}}
+        </div>
+    </header>
+
+    <main class="page">
+        <section class="hero">
+            <div class="hero__index">Nº 01 / Foreword</div>
+            <div>
+                <div class="eyebrow reveal reveal--1">A demonstration in C++ · MMXXVI</div>
+                <h1 class="hero__title reveal reveal--2">
+                    A small <em>but spirited</em><br>
+                    HTTP example,<br>
+                    typeset in code.
+                </h1>
+                <p class="hero__lede reveal reveal--3">
+                    fox-http-example renders HTML on the server, talks to MySQL, returns JSON when
+                    asked, and looks (we hope) better than the average benchmark suite. Today is
+                    {{datestr}}.
+                </p>
+            </div>
+            <aside class="status reveal reveal--4">
+                <div class="status__row">
+                    <span class="status__label">Engine</span>
+                    <span class="status__value">fox-http</span>
+                </div>
+                <div class="status__row">
+                    <span class="status__label">Language</span>
+                    <span class="status__value">C++17</span>
+                </div>
+                <div class="status__row">
+                    <span class="status__label">Date</span>
+                    <span class="status__value" cpp-text="datestr">—</span>
+                </div>
+                <div class="status__row">
+                    <span class="status__label">Local Time</span>
+                    <span class="status__value" cpp-text="timestr">—</span>
+                </div>
+                <div class="status__row">
+                    <span class="status__label">Storage</span>
+                    <span class="status__value">MySQL · jsoncpp</span>
+                </div>
+            </aside>
+        </section>
+
+        <section class="section">
+            <header class="section__head">
+                <div class="eyebrow">Nº 02 / Capabilities</div>
+                <div>
+                    <h2 class="section__title">Four routes,<br><em>four flavours.</em></h2>
+                    <p class="section__lede">Every endpoint below is handled by a different fox-http feature. Click any of them to see the runtime in motion.</p>
+                </div>
+            </header>
+            <div class="features">
+                <a class="feature" href="/users">
+                    <div class="feature__num">01 — HTML</div>
+                    <h3 class="feature__title">A server-rendered <em>directory</em></h3>
+                    <p class="feature__body">Iterates every row in the user table with cpp-for, compiled into the binary, served as cached HTML.</p>
+                    <span class="feature__path">GET /users</span>
+                </a>
+                <a class="feature" href="/userinfo/1">
+                    <div class="feature__num">02 — JSON</div>
+                    <h3 class="feature__title">A typed <em>JSON</em> handler</h3>
+                    <p class="feature__body">A function that returns Json::Value gets serialised, headered, and content-lengthed for free.</p>
+                    <span class="feature__path">GET /userinfo/{id}</span>
+                </a>
+                <a class="feature" href="/test/string/42">
+                    <div class="feature__num">03 — Path</div>
+                    <h3 class="feature__title">Typed <em>path parameters</em></h3>
+                    <p class="feature__body">{int:id} and {string:dir} land in your handler signature without a single line of glue code.</p>
+                    <span class="feature__path">GET /test/{dir}/string/{id}</span>
+                </a>
+                <a class="feature" href="/hello">
+                    <div class="feature__num">04 — Raw</div>
+                    <h3 class="feature__title">Zero-copy <em>writev</em></h3>
+                    <p class="feature__body">When allocations matter, hand-construct an iovec and ship the body straight from a string_view.</p>
+                    <span class="feature__path">GET /hello</span>
+                </a>
+            </div>
+        </section>
+
+        <section class="section">
+            <header class="section__head">
+                <div class="eyebrow">Nº 03 / Authenticate</div>
+                <div>
+                    <h2 class="section__title">Sign in, <em>politely.</em></h2>
+                    <p class="section__lede">POSTs to <code>/login</code> as <code>x-www-form-urlencoded</code>. The placeholder accepts any username so long as the password is the literal word <code>password</code>.</p>
+                </div>
+            </header>
+            <div class="login-grid">
+                <div class="login-info">
+                    <p>The handler reads <code>username</code> and <code>password</code> from the form, validates lazily, and on success sets a <code>session_token</code> cookie before returning <code>{ "ok": true }</code> as JSON.</p>
+                    <p>This is example code — do not copy the auth path into anything that matters.</p>
+                </div>
+                <form class="login-form" action="/login" method="post">
+                    <span class="login-form__corner login-form__corner--tl"></span>
+                    <span class="login-form__corner login-form__corner--tr"></span>
+                    <span class="login-form__corner login-form__corner--bl"></span>
+                    <span class="login-form__corner login-form__corner--br"></span>
+                    <div class="field">
+                        <label class="field__label" for="username">Username</label>
+                        <input class="field__input" type="text" id="username" name="username" placeholder="e.g. zhangsan" required autocomplete="username">
+                    </div>
+                    <div class="field">
+                        <label class="field__label" for="password">Password</label>
+                        <input class="field__input" type="password" id="password" name="password" placeholder="password" required autocomplete="current-password">
+                    </div>
+                    <button class="btn" type="submit">Sign in →</button>
+                </form>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div>fox-http · example · {{datestr}}</div>
+            <div><a href="https://github.com/forestye/fox-http-example">github.com/forestye/fox-http-example</a></div>
+        </footer>
+    </main>
 </body>
 </html>

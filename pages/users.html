@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directory · fox-http example</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script type="application/x-cpp-head">
+        #include "db/db.h"
+        #include "db/user.h"
+    </script>
+    <script type="application/x-cpp-source">
+        auto conn = DB::instance().acquire();
+        UserRepo userRepo(conn.ref());
+        auto users = userRepo.find_all(50);
+    </script>
+</head>
+<body>
+    <header class="rail">
+        <a href="/" class="rail__brand">
+            <span class="rail__brand-mark">fox</span>
+            <span>http · example</span>
+        </a>
+        <nav class="rail__nav">
+            <a href="/">Home</a>
+            <a href="/users">Directory</a>
+            <a href="/userinfo/1">JSON API</a>
+            <a href="/test/string">Routing</a>
+        </nav>
+        <div class="rail__meta">
+            <span class="dot"></span>GET /users
+        </div>
+    </header>
+
+    <main class="page">
+        <section class="hero">
+            <div class="hero__index">Nº 02 / Directory</div>
+            <div>
+                <div class="eyebrow reveal reveal--1">SELECT * FROM user — rendered with cpp-for</div>
+                <h1 class="hero__title reveal reveal--2">
+                    The <em>roster.</em>
+                </h1>
+                <p class="hero__lede reveal reveal--3">
+                    Each card below is a row from MySQL, walked at request time and rendered into HTML.
+                    Follow any name to its profile route.
+                </p>
+            </div>
+            <aside class="status reveal reveal--4">
+                <div class="status__row">
+                    <span class="status__label">Source</span>
+                    <span class="status__value">user table</span>
+                </div>
+                <div class="status__row">
+                    <span class="status__label">Limit</span>
+                    <span class="status__value">50 rows</span>
+                </div>
+                <div class="status__row">
+                    <span class="status__label">Returned</span>
+                    <span class="status__value">{{users.size()}}</span>
+                </div>
+                <div class="status__row">
+                    <span class="status__label">Rendered with</span>
+                    <span class="status__value">cpp-for</span>
+                </div>
+            </aside>
+        </section>
+
+        <section class="section" cpp-if="!users.empty()">
+            <div class="users">
+                <a class="user-card" cpp-for="const auto& u : users" href="/user/{{u.id()}}">
+                    <div class="user-card__id">ID · {{u.id()}}</div>
+                    <h3 class="user-card__name"><em cpp-text="u.username()">—</em></h3>
+                    <div class="user-card__email" cpp-text="u.email()">—</div>
+                    <div class="user-card__date">Joined · <span cpp-text="u.created_at()">—</span></div>
+                </a>
+            </div>
+        </section>
+
+        <section cpp-if="users.empty()">
+            <div class="empty">
+                <div class="empty__code">EMPTY · 0 ROWS</div>
+                <h2 class="empty__title">No users on file.</h2>
+                <p class="empty__sub">Run db/tables.sql, insert a row, refresh this page.</p>
+                <a href="/" class="empty__back">← back to home</a>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div><a href="/">← home</a></div>
+            <div>SELECT id, username, email, created_at FROM user LIMIT 50</div>
+        </footer>
+    </main>
+</body>
+</html>

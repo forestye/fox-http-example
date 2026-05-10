@@ -1,6 +1,7 @@
 GET /hello -> hello(resp)
 GET /favicon.ico -> favicon(resp)
 GET / -> index(resp)
+GET /users -> users(resp)
 GET /user/{int:id} -> user(resp,id)
 POST /login -> login(form, resp)
 FILESYSTEM /css -> ../pages/css 

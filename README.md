@@ -7,9 +7,10 @@
 
 **里面有什么：**
 
-- 12 条路由，覆盖静态、动态参数、catchall、FILESYSTEM 静态文件、JSON API、
+- 13 条路由，覆盖静态、动态参数、catchall、FILESYSTEM 静态文件、JSON API、
   HTML 页面、表单 POST
-- 两个 HTML 模板（首页 + 用户详情）用 fox-page 编译成零拷贝 `writev` 渲染函数
+- 三个 HTML 模板（首页 + 用户列表 + 用户详情）用 fox-page 编译成零拷贝
+  `writev` 渲染函数；其中用户列表页演示 `cpp-for` 在 MySQL 结果集上迭代
 - MySQL 连接池（经 fox-mysql）+ 用户/会话两张表 + 简单 Repo 类
 - Apache 2.0
 
@@ -24,32 +25,36 @@
 
 - **C++17** 编译器
 - **CMake** 3.14+
-- **fox-http / fox-route / fox-page**（相邻目录 `../fox-http`、`../fox-route`、
-  `../fox-page`）
+- **fox-http / fox-route / fox-page** 已安装到系统（默认 `/usr/local`）。
+  `fox-http` 走 `find_package(fox-http)`，`fox-route` / `fox-route-func` /
+  `fox-page` 三个可执行通过 `find_program` 在 PATH 上查找。
 - **fox-mysql** + **libmysqlclient**（数据库路由用到；无此环境时 DB 初始化失败
   会降级为警告，非 DB 路由仍可用）
-- **jsoncpp**（`libjsoncpp-dev`）
+- **jsoncpp**（`libjsoncpp-dev`）—— 走 `find_package(jsoncpp)`
 
 典型 Ubuntu/Debian：
 
 ```bash
-sudo apt install cmake libjsoncpp-dev libmysqlclient-dev
-# fox-mysql: https://github.com/forestye/fox-mysql 自行构建安装
+sudo apt install cmake libjsoncpp-dev libmysqlclient-dev pkg-config
+# fox-http / fox-route / fox-page / fox-mysql：分别 clone 后
+#   cmake -S . -B build && cmake --build build -j && sudo cmake --install build
+# 装到 /usr/local 之后本项目就能直接 find_package / find_program 找到。
 ```
 
 ---
 
 ## 构建与运行
 
-目录结构预期（三个 fox-* 仓和本仓平级）：
+前提：fox-http / fox-route / fox-page / fox-mysql 已安装到系统目录
+（见上面 [依赖](#依赖) 一节）。验证一下：
 
+```bash
+which fox-route fox-page                     # 应在 /usr/local/bin
+ls /usr/local/lib/cmake/fox-http             # 应有 fox-httpConfig.cmake
+ls /usr/local/lib/cmake/fox-mysql            # 应有 fox-mysqlConfig.cmake
 ```
-code/
-├── fox-http/       # 先 cmake --build build
-├── fox-route/      # 先 cmake --build build
-├── fox-page/       # 先 cmake --build build
-└── fox-http-example/
-```
+
+然后：
 
 ```bash
 git clone git@github.com:forestye/fox-http-example.git
@@ -79,6 +84,7 @@ curl -i http://127.0.0.1:19876/css/styles.css                # FILESYSTEM 静态
 GET  /hello -> hello(resp)
 GET  /favicon.ico -> favicon(resp)
 GET  / -> index(resp)
+GET  /users -> users(resp)
 GET  /user/{int:id} -> user(resp, id)
 POST /login -> login(form, resp)
 
@@ -102,29 +108,30 @@ FILESYSTEM 静态映射、`text`/`json` 返回类型自动序列化。
 | 文件 | 角色 |
 |---|---|
 | `test.cpp` | `main()`——DB 初始化（非致命）+ `fox::http::HttpServer` 启动 |
-| `handlers.cpp` | `hello` / `favicon` / `login` / `api_user_info` / `test_*` 这些 handler 的实际实现。`index` / `user` 由 fox-page 从 HTML 模板生成 |
+| `handlers.cpp` | `hello` / `favicon` / `login` / `api_user_info` / `test_*` 这些 handler 的实际实现。`index` / `users` / `user` 由 fox-page 从 HTML 模板生成 |
 | `routes.crdl` | 路由定义，fox-route 消费 |
-| `pages/index.html`、`pages/user.html` | fox-page 的输入模板，构建期编译为 C++ 渲染函数 |
+| `pages/index.html`、`pages/users.html`、`pages/user.html` | fox-page 的输入模板，构建期编译为 C++ 渲染函数 |
 | `pages/css/`、`pages/images/`、`pages/upload/` | FILESYSTEM 静态文件 |
 | `db/db.{h,cpp}` | fox-mysql 连接池单例 |
 | `db/user.{h,cpp}` | `UserRepo`，通过 ID 查 user |
 | `db/session.{h,cpp}` | `SessionRepo`，会话 token 管理 |
 | `db/tables.sql` | schema 参考 |
-| `CMakeLists.txt` | 通过 `add_subdirectory(../fox-http)` 链 fox-http，`find_program` 定位 fox-route/fox-page；自定义命令触发 `.crdl`→C++ 和 `.html`→C++ 代码生成 |
+| `CMakeLists.txt` | `find_package(fox-http / fox-mysql / jsoncpp)` 引入库依赖，`find_program` 在 PATH 上定位 fox-route/fox-route-func/fox-page；自定义命令触发 `.crdl`→C++ 和 `.html`→C++ 代码生成 |
 
 构建时 CMake 会在 `build/` 下生成：
 
 - `handlers.h`、`router.generated.h`、`router.generated.cpp`（由 fox-route 产出）
-- `pages/index.cpp`、`pages/user.cpp`（由 fox-page 产出）
+- `pages/index.cpp`、`pages/users.cpp`、`pages/user.cpp`（由 fox-page 产出）
 - 最终链接出可执行文件 `build/fox-http-example`
 
 ---
 
 ## 连接 MySQL（可选）
 
-DB 路由 (`/user/{id}`、`/userinfo/{id}`) 需要真实 MySQL。其它路由不需要。
+DB 相关路由 (`/users`、`/user/{id}`、`/userinfo/{id}`) 需要真实 MySQL。
+其它路由不需要。
 
-### 1. 起一个本地 MySQL
+### 1. 起一个本地 MySQL（已有 MySQL 跳过）
 
 以 Docker 为例：
 
@@ -132,38 +139,77 @@ DB 路由 (`/user/{id}`、`/userinfo/{id}`) 需要真实 MySQL。其它路由不
 docker run --name fox-mysql -e MYSQL_ROOT_PASSWORD=rootpw -p 3306:3306 -d mysql:8
 ```
 
-### 2. 建库建表建用户
+### 2. 建库 / 建用户 / 建表 / 写示例数据
+
+下面这块 SQL 是自包含的，整块拷进有权限的客户端（如 root）执行即可。
+账号密码与 `db/db.cpp` 里硬编码的一致 (`simple_http` / `dbpassexample`)；
+想改库名密码记得两处一起改。
+
+```sql
+-- 1) 库 + 账户
+CREATE DATABASE IF NOT EXISTS simple_http
+    DEFAULT CHARACTER SET utf8mb4
+    DEFAULT COLLATE utf8mb4_unicode_ci;
+CREATE USER IF NOT EXISTS 'simple_http'@'%' IDENTIFIED BY 'dbpassexample';
+GRANT ALL ON simple_http.* TO 'simple_http'@'%';
+FLUSH PRIVILEGES;
+
+USE simple_http;
+
+-- 2) 表结构（与 db/tables.sql 一致）
+CREATE TABLE IF NOT EXISTS user (
+    id            INTEGER PRIMARY KEY AUTO_INCREMENT  COMMENT '用户ID',
+    username      VARCHAR(64)  NOT NULL UNIQUE        COMMENT '用户名',
+    password_hash VARCHAR(128) NOT NULL               COMMENT '密码哈希',
+    email         VARCHAR(128)                        COMMENT '邮箱',
+    created_at    DATETIME DEFAULT CURRENT_TIMESTAMP  COMMENT '创建时间'
+);
+
+CREATE TABLE IF NOT EXISTS session (
+    id         INTEGER PRIMARY KEY AUTO_INCREMENT  COMMENT '会话ID',
+    user_id    INTEGER NOT NULL                    COMMENT '用户ID',
+    token      VARCHAR(128) NOT NULL UNIQUE        COMMENT '会话令牌',
+    expires_at DATETIME NOT NULL                   COMMENT '过期时间',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP  COMMENT '创建时间'
+);
+
+-- 3) 几条示例用户，让 /users 列表页不为空
+INSERT INTO user (username, password_hash, email) VALUES
+    ('alice',   'placeholder', 'alice@example.com'),
+    ('bowen',   'placeholder', 'bowen@example.com'),
+    ('cyril',   'placeholder', 'cyril@example.com'),
+    ('dimitri', 'placeholder', 'dimitri@example.com'),
+    ('elara',   'placeholder', 'elara@example.com');
+```
+
+一行 shell 执行（保存为 `setup.sql` 然后 pipe 进去）：
 
 ```bash
-mysql -h 127.0.0.1 -uroot -prootpw <<'SQL'
-CREATE DATABASE simple_http;
-CREATE USER 'simple_http'@'%' IDENTIFIED BY 'dbpassexample';
-GRANT ALL ON simple_http.* TO 'simple_http'@'%';
-USE simple_http;
-SQL
-mysql -h 127.0.0.1 -usimple_http -pdbpassexample simple_http < db/tables.sql
-mysql -h 127.0.0.1 -usimple_http -pdbpassexample simple_http \
-    -e "INSERT INTO user (username, password_hash, email) VALUES ('alice', 'xxx', 'alice@example.com');"
+mysql -h 127.0.0.1 -uroot -prootpw < setup.sql
 ```
 
-### 3. 重跑服务
+### 3. 验证
 
-起起来后 `curl http://127.0.0.1:19876/userinfo/1` 返回 JSON：
+服务启动后：
 
-```json
-{"id":1,"username":"alice","email":"alice@example.com","created_at":"..."}
+```bash
+curl -s http://127.0.0.1:19876/userinfo/1
+# → {"id":1,"username":"alice","email":"alice@example.com","created_at":"..."}
+
+curl -s http://127.0.0.1:19876/users | grep -oE '<em>[^<]+</em>' | head
+# → <em>alice</em> / <em>bowen</em> / <em>cyril</em> / ...
 ```
 
-> 账号密码硬编码在 `db/db.cpp`：`simple_http` / `dbpassexample` /
-> `localhost:3306` / `simple_http`。想改到别的库，直接改那几个字面量。
+> 想改到别的库或换密码，直接改 `db/db.cpp` 里那几个字面量；或者在 `init()`
+> 里改成读环境变量。
 
 ---
 
 ## 学完这个示例你能学到的
 
-1. **怎么把 fox-* 三件套串起来**：CMakeLists.txt 里 `add_subdirectory(../fox-http)`
-   + `find_program(fox-route fox-route-func fox-page)` + `add_custom_command`
-   自动生成 Router 和页面 C++。
+1. **怎么把 fox-* 三件套串起来**：CMakeLists.txt 里 `find_package(fox-http)`
+   引入库 + `find_program(fox-route / fox-route-func / fox-page)` 找代码生成器
+   + `add_custom_command` 自动生成 Router 和页面 C++。
 2. **路由如何定义**：`routes.crdl` 里声明，生成器负责做参数解析、返回值包装。
 3. **业务 handler 怎么写**：文本 / HTML / JSON 三种返回类型，分别返回 `std::string` /
    `std::string` / `Json::Value`；需要原始 `HttpResponse` 的手动控制时参数里加 `resp`。
@@ -176,9 +222,11 @@ mysql -h 127.0.0.1 -usimple_http -pdbpassexample simple_http \
 
 ## 遇到问题
 
-- **`fox-route not found — build fox-route first.`**：先去 `../fox-route`
-  `cmake --build build`，fox-route 的可执行会落在 `../fox-route/build/fox-route`。
-  fox-page、fox-http 同理。
+- **`fox-route not found — install fox-route to a directory on PATH.`**：去
+  fox-route 仓库 `cmake -S . -B build && cmake --build build -j && sudo
+  cmake --install build`，可执行会落在 `/usr/local/bin/fox-route`。
+  fox-page 同理。fox-http 是装库，报错信息会是 `fox-http install not found`，
+  到 fox-http 仓库做同样的 `cmake --install` 即可。
 - **`DB pool not initialized` 在所有 DB 路由**：本机没 MySQL 或账号不对。
   非 DB 路由（`/hello`、`/test/*`、FILESYSTEM）仍然可用，test.cpp 里 DB
   初始化失败是 warning，不影响进程启动。

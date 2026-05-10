@@ -1,6 +1,6 @@
 /* fox-http-example · Editorial Terminal */
 
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=JetBrains+Mono:ital,wght@0,300..800;1,300..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=JetBrains+Mono:ital,wght@0,300..800;1,300..800&family=Noto+Serif+SC:wght@300..900&display=swap');
 
 :root {
     --bg: #0c0a08;
@@ -14,7 +14,7 @@
     --success: #88b878;
     --rule: rgba(244, 237, 224, 0.08);
     --rule-strong: rgba(244, 237, 224, 0.15);
-    --serif: "Fraunces", Georgia, "Times New Roman", serif;
+    --serif: "Fraunces", "Noto Serif SC", "Source Han Serif SC", "Songti SC", Georgia, serif;
     --mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
 }
 
@@ -48,6 +48,9 @@ body::before {
     background-size: 200px 200px;
     mix-blend-mode: overlay;
 }
+
+/* Emphasis: color + weight bump, never italic — CJK has no real italic */
+em { font-style: normal; color: var(--accent); font-weight: 400; }
 
 /* ─── Header rail ──────────────────────────────────────────── */
 .rail {
@@ -162,11 +165,7 @@ body::before {
     margin: 32px 0 0;
     font-variation-settings: "opsz" 144;
 }
-.hero__title em {
-    font-style: italic;
-    color: var(--accent);
-    font-weight: 300;
-}
+.hero__title em { /* color + weight inherited from global em rule */ }
 .hero__lede {
     font-size: 19px;
     color: var(--fg-muted);
@@ -231,10 +230,7 @@ body::before {
     line-height: 1.0;
     margin: 16px 0 0;
 }
-.section__title em {
-    font-style: italic;
-    color: var(--accent);
-}
+.section__title em { /* covered by global em rule */ }
 .section__lede {
     font-size: 17px;
     color: var(--fg-muted);
@@ -285,11 +281,7 @@ body::before {
     line-height: 1.15;
     letter-spacing: -0.01em;
 }
-.feature__title em {
-    font-style: italic;
-    color: var(--accent);
-    font-weight: 300;
-}
+.feature__title em { /* covered by global em rule */ }
 .feature__body {
     font-size: 14px;
     color: var(--fg-muted);
@@ -447,8 +439,8 @@ body::before {
     margin: 0 0 16px;
 }
 .user-card__name em {
-    font-style: italic;
     color: var(--fg);
+    font-weight: 400;
     transition: color .25s ease;
 }
 .user-card__email {
@@ -493,10 +485,7 @@ body::before {
     margin: 16px 0 24px;
     font-variation-settings: "opsz" 144;
 }
-.profile__title em {
-    font-style: italic;
-    color: var(--accent);
-}
+.profile__title em { /* covered by global em rule */ }
 .profile__bio {
     font-size: 19px;
     color: var(--fg-muted);
@@ -550,7 +539,6 @@ body::before {
 }
 .empty__title {
     font-family: var(--serif);
-    font-style: italic;
     font-size: 72px;
     font-weight: 300;
     margin: 24px 0 12px;

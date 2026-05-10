@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile · fox-http example</title>
+    <title>个人页 · fox-http 示例</title>
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <script type="application/x-cpp-head">
@@ -20,13 +20,13 @@
     <header class="rail">
         <a href="/" class="rail__brand">
             <span class="rail__brand-mark">fox</span>
-            <span>http · example</span>
+            <span>http · 示例</span>
         </a>
         <nav class="rail__nav">
-            <a href="/">Home</a>
-            <a href="/users">Directory</a>
-            <a href="/userinfo/1">JSON API</a>
-            <a href="/test/string">Routing</a>
+            <a href="/">首页</a>
+            <a href="/users">名册</a>
+            <a href="/userinfo/1">JSON 接口</a>
+            <a href="/test/string">路由</a>
         </nav>
         <div class="rail__meta">
             <span class="dot"></span>GET /user/{{id}}
@@ -36,17 +36,16 @@
     <main class="page">
         <section class="profile" cpp-if="user">
             <div>
-                <div class="eyebrow reveal reveal--1">Subject under inspection</div>
+                <div class="eyebrow reveal reveal--1">在档用户</div>
                 <div class="profile__id reveal reveal--2">
-                    User Nº {{id}}
+                    用户 Nº {{id}}
                 </div>
                 <h1 class="profile__title reveal reveal--3">
                     <em cpp-text="(*user).username()">—</em>
                 </h1>
                 <p class="profile__bio reveal reveal--4">
-                    A row in the user table, fetched by id and rendered server-side.
-                    The same record is also available as JSON at
-                    <code>/userinfo/{{id}}</code>.
+                    user 表中的一行，按 id 取出，由服务端直接渲染。
+                    同一条记录也能在 <code>/userinfo/{{id}}</code> 拿到 JSON 版本。
                 </p>
             </div>
             <aside class="reveal reveal--5">
@@ -56,15 +55,15 @@
                         <span class="spec__value">{{id}}</span>
                     </div>
                     <div class="spec__row">
-                        <span class="spec__label">Username</span>
+                        <span class="spec__label">用户名</span>
                         <span class="spec__value" cpp-text="(*user).username()">—</span>
                     </div>
                     <div class="spec__row">
-                        <span class="spec__label">Email</span>
+                        <span class="spec__label">邮箱</span>
                         <span class="spec__value" cpp-text="(*user).email()">—</span>
                     </div>
                     <div class="spec__row">
-                        <span class="spec__label">Joined</span>
+                        <span class="spec__label">注册时间</span>
                         <span class="spec__value" cpp-text="(*user).created_at()">—</span>
                     </div>
                 </div>
@@ -73,15 +72,15 @@
 
         <section cpp-if="!user">
             <div class="empty">
-                <div class="empty__code">404 · ROW NOT FOUND</div>
-                <h2 class="empty__title">No such user.</h2>
-                <p class="empty__sub">No row matched id = {{id}} in the user table.</p>
-                <a href="/users" class="empty__back">← view directory</a>
+                <div class="empty__code">404 · 未找到该行</div>
+                <h2 class="empty__title">查无此人。</h2>
+                <p class="empty__sub">user 表中没有 id = {{id}} 的行。</p>
+                <a href="/users" class="empty__back">← 查看名册</a>
             </div>
         </section>
 
         <footer class="footer">
-            <div><a href="/users">← directory</a></div>
+            <div><a href="/users">← 名册</a></div>
             <div>SELECT * FROM user WHERE id = {{id}}</div>
         </footer>
     </main>

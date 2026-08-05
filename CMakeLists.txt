@@ -93,3 +93,11 @@ target_link_libraries(fox-http-example PRIVATE
     fox-mysql::fox-mysql
     JsonCpp::JsonCpp
 )
+
+# ─── 冒烟回归:cd build && ctest --output-on-failure ──────────────────
+# WORKING_DIRECTORY 必须是 build/:FILESYSTEM 路由的 ../pages/* 按 cwd 解析。
+enable_testing()
+add_test(NAME smoke
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/smoke.sh $<TARGET_FILE:fox-http-example>
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+)

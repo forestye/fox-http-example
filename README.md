@@ -12,12 +12,16 @@
 - 三个 HTML 模板（首页 + 用户列表 + 用户详情）用 fox-page 编译成零拷贝
   `writev` 渲染函数；其中用户列表页演示 `cpp-for` 在 MySQL 结果集上迭代
 - MySQL 连接池（经 fox-mysql）+ 用户/会话两张表 + 简单 Repo 类
+- 冒烟回归 `tests/smoke.sh`（已接入 ctest）：每类路由、模板插值、HTML 转义
+  各有断言，见 [回归测试](#回归测试)
 - Apache 2.0
 
 **不在这里（故意的）：**
 
 - 鉴权只是个占位（密码 `"password"` 就通过）
 - 错误处理只演示路径，生产应用需要自己补全
+- 请求体没有大小上限（fox-http 目前按 Content-Length 全量读入内存），公网
+  部署必须前置 nginx 并设置 `client_max_body_size`
 
 ---
 
@@ -61,9 +65,13 @@ git clone git@github.com:forestye/fox-http-example.git
 cd fox-http-example
 cmake -S . -B build
 cmake --build build -j
-./build/fox-http-example
+cd build && ./fox-http-example
 # → fox-http-example listening on port 19876
 ```
+
+注意最后一步是在 `build/` 目录里启动：FILESYSTEM 路由映射的 `../pages/*`
+（以及 favicon 的读取路径）都按**进程当前目录**解析，从别的目录启动会拿到
+404（见 [遇到问题](#遇到问题)）。
 
 另起终端 curl 试试：
 
@@ -75,6 +83,41 @@ curl    http://127.0.0.1:19876/test/alpha/string/7           # 两个路径参�
 curl -X POST -d "username=x&password=password" http://127.0.0.1:19876/login
 curl -i http://127.0.0.1:19876/css/styles.css                # FILESYSTEM 静态文件
 ```
+
+---
+
+## 回归测试
+
+`tests/smoke.sh` 起一个真实服务进程，对 README 里出现的每类路由 curl 一遍并
+校验响应内容——包括模板文本/属性插值渲出的是求值结果而非字面
+`<< (expr) <<`，以及用户数据里的 `<script>` 到页面上必须已转义
+（见 [模板与转义](#模板与转义)）。已接入 ctest：
+
+```bash
+cd build && ctest --output-on-failure
+```
+
+本机 127.0.0.1:3306 上有 [下文](#连接-mysql可选) 所建的 MySQL 时，DB 路由与
+转义回归一并校验（会临时插入并删除一行测试用户）；没有则这部分自动 SKIP，
+其余断言照跑。约定：**README 中声称的行为，这个脚本里应有对应断言**——
+发现文档与实现脱节，修哪边都行，但要让断言先红后绿。
+
+---
+
+## 模板与转义
+
+fox-page（`ff41757` 起）对动态输出**默认 HTML 转义**：`{{expr}}`、`cpp-text`、
+`cpp:<attr>` 与属性值内的 `{{}}`，输出前都会转义 `& < > " '` 五个字符。
+所以本项目的模板直接写 `cpp-text="u.username()"` 渲染用户数据即可，
+**不要在应用层再自行转义**——那会双重转义，页面上 `&` 显示成 `&amp;`。
+
+需要输出受信任的原始 HTML 时用逃生口：文本节点写三括号 `{{{expr}}}`，
+元素内容写 `cpp-html="expr"`；属性值内不提供 raw 豁免。本项目目前没有
+这类插值点。
+
+`tests/smoke.sh` 里有双向回归：插入用户名带 `<script>` 的行，断言页面上
+渲成 `&lt;script&gt;`（默认转义生效），同时断言页面上没有 `&amp;lt;`
+（应用层没有多套一层转义）。
 
 ---
 
@@ -111,6 +154,7 @@ FILESYSTEM 静态映射、`text`/`json` 返回类型自动序列化。
 | `handlers.cpp` | `hello` / `favicon` / `login` / `api_user_info` / `test_*` 这些 handler 的实际实现。`index` / `users` / `user` 由 fox-page 从 HTML 模板生成 |
 | `routes.crdl` | 路由定义，fox-route 消费 |
 | `pages/index.html`、`pages/users.html`、`pages/user.html` | fox-page 的输入模板，构建期编译为 C++ 渲染函数 |
+| `tests/smoke.sh` | 冒烟回归脚本，`ctest` 调用（见 [回归测试](#回归测试)） |
 | `pages/css/`、`pages/images/`、`pages/upload/` | FILESYSTEM 静态文件 |
 | `db/db.{h,cpp}` | fox-mysql 连接池单例 |
 | `db/user.{h,cpp}` | `UserRepo`，通过 ID 查 user |
@@ -200,8 +244,8 @@ mysql -h 127.0.0.1 -uroot -prootpw < setup.sql
 curl -s http://127.0.0.1:19876/userinfo/1
 # → {"id":1,"username":"alice","email":"alice@example.com","created_at":"..."}
 
-curl -s http://127.0.0.1:19876/users | grep -oE '<em>[^<]+</em>' | head
-# → <em>alice</em> / <em>bowen</em> / <em>cyril</em> / ...
+curl -s http://127.0.0.1:19876/users | grep -oE 'user-card__name">[^<]+' | head
+# → user-card__name">alice / user-card__name">bowen / ...
 ```
 
 > 想改到别的库或换密码，直接改 `db/db.cpp` 里那几个字面量；或者在 `init()`
@@ -219,8 +263,11 @@ curl -s http://127.0.0.1:19876/users | grep -oE '<em>[^<]+</em>' | head
    `std::string` / `Json::Value`；需要原始 `HttpResponse` 的手动控制时参数里加 `resp`。
 4. **HTML 模板怎么和 handler 参数接上**：fox-route 的 `fox-route-func` 抽出
    handler 签名喂给 fox-page 的 `--func`，模板渲染函数和路由签名天然一致。
-5. **FILESYSTEM 路由**：静态资源一行声明映射到本地目录。
+5. **FILESYSTEM 路由**：静态资源一行声明映射到本地目录（相对路径按进程
+   cwd 解析）。
 6. **DB 连接池 + Repo 模式**：`db.{h,cpp}` 单例 + `*_repo.h` 的连接借用模式。
+7. **模板转义语义**：fox-page 默认转义动态输出，受信任的原始 HTML 走
+   `{{{expr}}}` / `cpp-html` 逃生口（见 [模板与转义](#模板与转义)）。
 
 ---
 
